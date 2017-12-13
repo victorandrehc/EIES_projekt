@@ -9,7 +9,9 @@ const int speed=200;
 Zumo32U4Encoders encoders;
 const char encoderErrorLeft[] PROGMEM = "!<c2";
 const char encoderErrorRight[] PROGMEM = "!<e2";
-const int one_meter=4000;
+const int one_meter=7204;
+int left_count=0;
+int right_count=0;
 
 
 void setup() {
@@ -32,13 +34,16 @@ void loop() {
 	bool errorLeft = encoders.checkErrorLeft();
     bool errorRight = encoders.checkErrorRight();
     if(!errorLeft && !errorRight){
-    	if(countsLeft>= one_meter || countsRight>= one_meter){
+    	if(max(countsLeft-left_count,countsRight-right_count)>= one_meter){
 			motors.setSpeeds(0,0);
 			lcd.clear();
-	    	lcd.print(countsLeft);
+	    	lcd.print(F("Press A"));
 	    	lcd.gotoXY(0, 1);
-	    	lcd.print(countsRight);
-    		while(1);
+	    	lcd.print(max(countsRight,countsLeft));
+    		left_count=countsLeft;
+    		right_count=countsRight;
+    		buttonA.waitForButton();
+    		motors.setSpeeds(speed, speed);
     	}
     }
 
