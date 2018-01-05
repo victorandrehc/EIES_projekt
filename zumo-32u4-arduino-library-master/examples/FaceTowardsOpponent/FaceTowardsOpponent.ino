@@ -15,7 +15,7 @@ Zumo32U4ButtonA buttonA;
 // A sensors reading must be greater than or equal to this
 // threshold in order for the program to consider that sensor as
 // seeing an object.
-const uint8_t sensorThreshold = 4;
+const uint8_t sensorThreshold = 1;
 
 // The maximum speed to drive the motors while turning.  400 is
 // full speed.
@@ -61,36 +61,20 @@ void setup()
   // Wait for the user to press A before driving the motors.
   lcd.clear();
   lcd.print(F("Press A"));
-  //buttonA.waitForButton();
-  while(!buttonA.isPressed()){
-    proxSensors.read();
-    uint8_t leftValue = proxSensors.countsFrontWithLeftLeds();
-    uint8_t rightValue = proxSensors.countsFrontWithRightLeds();
-    lcd.clear();
-    lcd.gotoXY(0, 0);
-    lcd.print(F("Press A"));
-    lcd.gotoXY(0, 1);
-    lcd.print(leftValue);
-    lcd.print(' ');
-    lcd.print(rightValue);
-  }
+  buttonA.waitForButton();
   lcd.clear();
 }
 
-void turnRight(int leftValue, int rightValue)
+void turnRight()
 {
-  int leftVelocity=constrain(100+(rightValue-leftValue)*50,0,400);
-  int rightVelocity=constrain(100-(rightValue-leftValue)*50,0,400);
-  motors.setSpeeds(leftVelocity,rightVelocity);
+  motors.setSpeeds(turnSpeed, -turnSpeed);
   turningLeft = false;
   turningRight = true;
 }
 
-void turnLeft(int leftValue, int rightValue)
+void turnLeft()
 {
-  int leftVelocity=constrain(100-(leftValue-rightValue)*50,0,400);
-  int rightVelocity=constrain(100+(leftValue-rightValue)*50,0,400);
-  motors.setSpeeds(leftVelocity,rightVelocity);
+  motors.setSpeeds(-turnSpeed, turnSpeed);
   turningLeft = true;
   turningRight = false;
 }
@@ -136,92 +120,49 @@ void loop()
   {
     // An object seen.
     ledYellow(1);
-    lcd.clear();
-    lcd.gotoXY(0, 1);
-    lcd.print(F("OBS1"));
 
     lastTimeObjectSeen = millis();
 
     bool lastTurnRight = turnRight;
-    if(!(leftValue>=6 && rightValue>=6)){
-      if (leftValue < rightValue){
-          lcd.clear();
-          lcd.gotoXY(0, 0);
-          lcd.print(F("OBSR1"));
-          lcd.gotoXY(0, 1);
-          lcd.print(leftValue);
-          lcd.print(' ');
-          lcd.print(rightValue);
-          // The right value is greater, so the object is probably
-          // closer to the robot's right LEDs, which means the robot
-          // is not facing it directly.  Turn to the right to try to
-          // make it more even.
-          turnRight(leftValue,rightValue);
-          senseDir = RIGHT;
-      }
-      else if (leftValue > rightValue){
-          lcd.clear();
-          lcd.gotoXY(0, 0);
-          lcd.print(F("OBSL1"));
-          lcd.gotoXY(0, 1);
-          lcd.print(leftValue);
-          lcd.print(' ');
-          lcd.print(rightValue);
-        // The left value is greater, so turn to the left.
-        turnLeft(leftValue,rightValue);
-        senseDir = LEFT;
-      }else{
-          lcd.clear();
-          lcd.gotoXY(0, 0);
-          lcd.print(F("OBSC1"));
-          lcd.gotoXY(0, 1);
-          lcd.print(leftValue);
-          lcd.print(' ');
-          lcd.print(rightValue);
-          // The values are equal, so stop the motors.
-          //stop();      
-          motors.setSpeeds(100,100);
-      }
-    }else{
-          lcd.clear();
-          lcd.gotoXY(0, 0);
-          lcd.print(F("OBN1"));
-          lcd.gotoXY(0, 1);
-          lcd.print(leftValue);
-          lcd.print(' ');
-          lcd.print(rightValue);
-          //stop();
-          motors.setSpeeds(00,00);    
+
+    if (leftValue < rightValue)
+    {
+      // The right value is greater, so the object is probably
+      // closer to the robot's right LEDs, which means the robot
+      // is not facing it directly.  Turn to the right to try to
+      // make it more even.
+      turnRight();
+      senseDir = RIGHT;
     }
-    
+    else if (leftValue > rightValue)
+    {
+      // The left value is greater, so turn to the left.
+      turnLeft();
+      senseDir = LEFT;
+    }
+    else
+    {
+      // The values are equal, so stop the motors.
+      stop();
+    }
   }
   else
   {
     // No object is seen, so just keep turning in the direction
     // that we last sensed the object.
     ledYellow(0);
-    lcd.clear();
-    lcd.gotoXY(0, 0);
-    lcd.print(F("OBUS1"));
-    lcd.gotoXY(0, 1);
-    lcd.print(leftValue);
-    lcd.print(' ');
-    lcd.print(rightValue);
 
     if (senseDir == RIGHT)
     {
-      //turnRight();
-      motors.setSpeeds(400, 100);
+      turnRight();
     }
     else
     {
-      //turnLeft();
-      motors.setSpeeds(100, 400);
+      turnLeft();
     }
-  
   }
 
-  /*lcd.gotoXY(0, 0);
+  lcd.gotoXY(0, 0);
   lcd.print(leftValue);
   lcd.print(' ');
   lcd.print(rightValue);
@@ -230,5 +171,5 @@ void loop()
   lcd.print(' ');
   lcd.print(turnSpeed);
   lcd.print(' ');
-  lcd.print(' ');*/
+  lcd.print(' ');
 }

@@ -15,7 +15,7 @@ Zumo32U4ButtonA buttonA;
 // A sensors reading must be greater than or equal to this
 // threshold in order for the program to consider that sensor as
 // seeing an object.
-const uint8_t sensorThreshold = 4;
+const uint8_t sensorThreshold = 2;
 
 // The maximum speed to drive the motors while turning.  400 is
 // full speed.
@@ -61,36 +61,20 @@ void setup()
   // Wait for the user to press A before driving the motors.
   lcd.clear();
   lcd.print(F("Press A"));
-  //buttonA.waitForButton();
-  while(!buttonA.isPressed()){
-    proxSensors.read();
-    uint8_t leftValue = proxSensors.countsFrontWithLeftLeds();
-    uint8_t rightValue = proxSensors.countsFrontWithRightLeds();
-    lcd.clear();
-    lcd.gotoXY(0, 0);
-    lcd.print(F("Press A"));
-    lcd.gotoXY(0, 1);
-    lcd.print(leftValue);
-    lcd.print(' ');
-    lcd.print(rightValue);
-  }
+  buttonA.waitForButton();
   lcd.clear();
 }
 
-void turnRight(int leftValue, int rightValue)
+void turnRight()
 {
-  int leftVelocity=constrain(100+(rightValue-leftValue)*50,0,400);
-  int rightVelocity=constrain(100-(rightValue-leftValue)*50,0,400);
-  motors.setSpeeds(leftVelocity,rightVelocity);
+  motors.setSpeeds(turnSpeed, -turnSpeed);
   turningLeft = false;
   turningRight = true;
 }
 
-void turnLeft(int leftValue, int rightValue)
+void turnLeft()
 {
-  int leftVelocity=constrain(100-(leftValue-rightValue)*50,0,400);
-  int rightVelocity=constrain(100+(leftValue-rightValue)*50,0,400);
-  motors.setSpeeds(leftVelocity,rightVelocity);
+  motors.setSpeeds(-turnSpeed, turnSpeed);
   turningLeft = true;
   turningRight = false;
 }
@@ -156,7 +140,7 @@ void loop()
           // closer to the robot's right LEDs, which means the robot
           // is not facing it directly.  Turn to the right to try to
           // make it more even.
-          turnRight(leftValue,rightValue);
+          turnRight();
           senseDir = RIGHT;
       }
       else if (leftValue > rightValue){
@@ -168,7 +152,7 @@ void loop()
           lcd.print(' ');
           lcd.print(rightValue);
         // The left value is greater, so turn to the left.
-        turnLeft(leftValue,rightValue);
+        turnLeft();
         senseDir = LEFT;
       }else{
           lcd.clear();

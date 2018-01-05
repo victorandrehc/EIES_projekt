@@ -9,8 +9,8 @@ const int speed=200;
 Zumo32U4Encoders encoders;
 const char encoderErrorLeft[] PROGMEM = "!<c2";
 const char encoderErrorRight[] PROGMEM = "!<e2";
-//const int one_meter=10400;//100:1
-const int one_meter=7800;//75:1
+const int one_meter=10400;//100:1
+//const int one_meter=7800;//75:1
 int left_count=0;
 int right_count=0;
 
