@@ -15,7 +15,7 @@ Zumo32U4ButtonA buttonA;
 // A sensors reading must be greater than or equal to this
 // threshold in order for the program to consider that sensor as
 // seeing an object.
-const uint8_t sensorThreshold = 4;
+const uint8_t sensorThreshold = 3;
 
 // The maximum speed to drive the motors while turning.  400 is
 // full speed.
